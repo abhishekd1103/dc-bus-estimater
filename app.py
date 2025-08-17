@@ -7,7 +7,7 @@ from datetime import datetime
 
 # Page configuration
 st.set_page_config(
-    page_title="Data Center Bus Estimator",
+    page_title="ECPL-Data Center Bus Estimator",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -520,5 +520,5 @@ VALIDATION:
 # Footer
 st.markdown("---")
 st.markdown("**References:** Uptime Institute Data Center Standards,Reliability Standards, Industry General Practices")
-st.markdown("*Developed for professional electrical engineering applications. Validate results against specific project requirements.*")
+st.markdown("*Developed for rough estimation applications. Validate results against specific project requirements.*")
 st.markdown("*Developed By: Abhishek D*")
