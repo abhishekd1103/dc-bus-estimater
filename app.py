@@ -14,8 +14,8 @@ st.set_page_config(
 )
 
 # Title and description
-st.title("⚡ Data Center Electrical Bus Count Estimator")
-st.markdown("**Professional tool for estimating electrical bus requirements in data center power distribution systems**")
+st.title("⚡ ECPL Data Center Electrical Bus Count Estimator")
+st.markdown("**Tool for estimating electrical buses in data center power distribution systems**")
 
 # Sidebar for inputs
 st.sidebar.header("📊 Configuration Parameters")
