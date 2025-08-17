@@ -519,5 +519,6 @@ VALIDATION:
 
 # Footer
 st.markdown("---")
-st.markdown("**References:** Uptime Institute Data Center Standards, IEEE 493 Reliability Standards, Industry Best Practices")
+st.markdown("**References:** Uptime Institute Data Center Standards,Reliability Standards, Industry General Practices")
 st.markdown("*Developed for professional electrical engineering applications. Validate results against specific project requirements.*")
+st.markdown("*Developed By: Abhishek D*")
