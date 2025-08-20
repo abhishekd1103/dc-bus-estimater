@@ -1,524 +1,562 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Page configuration
 st.set_page_config(
-    page_title="ECPL-Data Center Bus Estimator",
+    page_title="DC Power Studies Cost Estimator | Abhishek Diwanji",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Title and description
-st.title("⚡ ECPL Data Center Electrical Bus Count Estimator")
-st.markdown("**Tool for estimating electrical buses in data center power distribution systems**")
+# Custom CSS for professional styling
+st.markdown("""
+<style>
+    .main-header {
+        background: linear-gradient(90deg, #1f4e79 0%, #2e8b57 100%);
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .developer-credit {
+        background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+        padding: 15px;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        font-weight: bold;
+        margin: 20px 0;
+    }
+    .disclaimer-box {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    .cost-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid #1f4e79;
+        margin: 10px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .study-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        border-left: 3px solid #2e8b57;
+    }
+    .calibration-section {
+        background: #e8f4f8;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border: 2px solid #1f4e79;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Sidebar for inputs
-st.sidebar.header("📊 Configuration Parameters")
+# Header with branding
+st.markdown("""
+<div class="main-header">
+    <h1>⚡ Data Center Power System Studies</h1>
+    <h2>Professional Cost Estimation Dashboard</h2>
+    <p>Advanced Engineering Tool for Load Flow, Short Circuit, PDC & Arc Flash Studies</p>
+</div>
+""", unsafe_allow_html=True)
 
-# Toggle for input type
-input_type = st.sidebar.radio(
-    "Starting Point:",
-    ["IT Load (MW)", "Total Facility Load (MW)"],
-    help="Choose whether to start from critical IT load or total facility load"
+# Developer credit
+st.markdown("""
+<div class="developer-credit">
+    🚀 Developed by <strong>Abhishek Diwanji</strong> | Power Systems Engineering Expert 
+    <br>📧 Contact for Custom Solutions & Professional Consulting
+</div>
+""", unsafe_allow_html=True)
+
+# Disclaimer
+st.markdown("""
+<div class="disclaimer-box">
+    <h4>⚠️ Important Disclaimer</h4>
+    <p><strong>Bus Count Estimation:</strong> This tool focuses on cost estimation for power system studies. 
+    Bus count calculations are handled by a separate specialized tool which will be integrated in future versions. 
+    Current bus estimates are for costing purposes only.</p>
+    <p><strong>Professional Use:</strong> Results are estimates based on industry standards. 
+    Always validate with qualified electrical engineers for actual project implementation.</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Sidebar inputs
+st.sidebar.header("📊 Project Configuration")
+
+# Project Information
+st.sidebar.subheader("🏢 Project Details")
+project_name = st.sidebar.text_input("Project Name", value="Data Center Power Studies")
+client_name = st.sidebar.text_input("Client Name", value="")
+
+# Load inputs
+st.sidebar.subheader("⚡ Electrical Load Parameters")
+it_capacity = st.sidebar.number_input("IT Capacity (MW)", min_value=0.1, max_value=100.0, value=5.0, step=0.1)
+mechanical_load = st.sidebar.number_input("Mechanical Load (MW)", min_value=0.1, max_value=50.0, value=2.0, step=0.1)
+house_load = st.sidebar.number_input("House/Auxiliary Load (MW)", min_value=0.1, max_value=20.0, value=0.5, step=0.1)
+
+# Tier and delivery
+tier_level = st.sidebar.selectbox("Tier Level", ["Tier I", "Tier II", "Tier III", "Tier IV"], index=2)
+delivery_type = st.sidebar.selectbox("Delivery Type", ["Standard", "Urgent"])
+report_format = st.sidebar.selectbox("Report Format", ["Basic PDF", "Detailed Report with Appendices", "Client-Branded Report"], index=1)
+
+# Studies selection
+st.sidebar.subheader("📋 Studies Required")
+studies_selected = {}
+studies_selected['load_flow'] = st.sidebar.checkbox("Load Flow Study", value=True)
+studies_selected['short_circuit'] = st.sidebar.checkbox("Short Circuit Study", value=True)
+studies_selected['pdc'] = st.sidebar.checkbox("Protective Device Coordination", value=True)
+studies_selected['arc_flash'] = st.sidebar.checkbox("Arc Flash Study", value=True)
+
+# Additional parameters
+client_meetings = st.sidebar.slider("Expected Client Meetings", 0, 10, 2, 1)
+custom_margin = st.sidebar.slider("Custom Margin (%)", 0, 30, 15, 1)
+
+# =============================================================================
+# CALIBRATION CONTROL SECTION
+# =============================================================================
+st.sidebar.subheader("🔧 Calibration & Customization")
+
+# Bus Count Calibration
+bus_calibration = st.sidebar.slider(
+    "Bus Count Calibration Factor", 
+    min_value=0.5, max_value=2.0, value=1.0, step=0.1,
+    help="Adjust bus count estimation based on historical project data"
 )
 
-# Main load input
-if input_type == "IT Load (MW)":
-    it_mw = st.sidebar.number_input(
-        "IT Load (MW)", 
-        min_value=0.1, 
-        max_value=100.0, 
-        value=5.0, 
-        step=0.1,
-        help="Critical IT load capacity (servers, storage, networking)"
-    )
-    total_mw = None
-else:
-    total_mw = st.sidebar.number_input(
-        "Total Facility Load (MW)", 
-        min_value=0.2, 
-        max_value=200.0, 
-        value=7.8, 
-        step=0.1,
-        help="Total facility electrical load including IT and infrastructure"
-    )
-    it_mw = None
+# Study-wise Calibration Factors
+st.sidebar.write("**Study Calibration Factors:**")
+load_flow_factor = st.sidebar.slider("Load Flow Factor", 0.5, 2.0, 1.0, 0.1)
+short_circuit_factor = st.sidebar.slider("Short Circuit Factor", 0.5, 2.0, 1.0, 0.1)
+pdc_factor = st.sidebar.slider("PDC Factor", 0.5, 2.0, 1.0, 0.1)
+arc_flash_factor = st.sidebar.slider("Arc Flash Factor", 0.5, 2.0, 1.0, 0.1)
 
-# PUE input
-pue = st.sidebar.slider(
-    "PUE (Power Usage Effectiveness)", 
-    min_value=1.1, 
-    max_value=2.0, 
-    value=1.56, 
-    step=0.01,
-    help="Industry average: 1.56 (Uptime Institute 2024)"
-)
+# Level-wise Work Allocation (Customizable)
+st.sidebar.write("**Resource Allocation (%):**")
+senior_allocation = st.sidebar.slider("Senior Engineer %", 10, 40, 20, 1) / 100
+mid_allocation = st.sidebar.slider("Mid-level Engineer %", 20, 50, 30, 1) / 100
+junior_allocation = st.sidebar.slider("Junior Engineer %", 30, 70, 50, 1) / 100
 
-# Data center type
-dc_type = st.sidebar.selectbox(
-    "Data Center Type",
-    ["Enterprise/Colo", "Hyperscale", "AI/HPC"],
-    help="Different types have varying infrastructure requirements"
-)
+# Normalize allocations to 100%
+total_allocation = senior_allocation + mid_allocation + junior_allocation
+if total_allocation != 1.0:
+    senior_allocation = senior_allocation / total_allocation
+    mid_allocation = mid_allocation / total_allocation
+    junior_allocation = junior_allocation / total_allocation
+    st.sidebar.info(f"Allocations normalized to 100%: Sr:{senior_allocation*100:.0f}%, Mid:{mid_allocation*100:.0f}%, Jr:{junior_allocation*100:.0f}%")
 
-# Auto-adjust defaults based on DC type
-if dc_type == "AI/HPC":
-    default_mech_frac = 0.8
-    pue_adjustment = -0.2  # AI/HPC often has better cooling efficiency
-elif dc_type == "Hyperscale":
-    default_mech_frac = 0.75
-    pue_adjustment = -0.1
-else:  # Enterprise/Colo
-    default_mech_frac = 0.7
-    pue_adjustment = 0.0
+# Hourly Rates (Customizable)
+st.sidebar.write("**Hourly Rates (₹):**")
+senior_rate = st.sidebar.slider("Senior Engineer Rate", 800, 2000, 1200, 50)
+mid_rate = st.sidebar.slider("Mid-level Engineer Rate", 400, 1000, 650, 25)
+junior_rate = st.sidebar.slider("Junior Engineer Rate", 200, 600, 350, 25)
 
-# Apply PUE adjustment
-adjusted_pue = max(1.1, pue + pue_adjustment)
+# Other Customizable Factors
+meeting_cost = st.sidebar.slider("Cost per Meeting (₹)", 3000, 15000, 8000, 500)
+urgency_multiplier = st.sidebar.slider("Urgent Delivery Multiplier", 1.1, 2.0, 1.3, 0.1)
 
-# Non-IT load split
-mech_fraction = st.sidebar.slider(
-    "Mechanical (Cooling) Fraction of Non-IT Load", 
-    min_value=0.5, 
-    max_value=0.9, 
-    value=default_mech_frac, 
-    step=0.01,
-    help="Percentage of non-IT load dedicated to cooling systems"
-)
-
-# Redundancy tier
-redundancy = st.sidebar.selectbox(
-    "Redundancy Tier",
-    ["N (Base)", "Tier III (N+1)", "Tier IV (2N)"],
-    index=1,
-    help="Higher tiers require more redundant equipment and buses"
-)
-
-# Equipment capacities section
-st.sidebar.subheader("🔧 Equipment Block Capacities")
-
-ups_lineup = st.sidebar.slider("UPS Lineup (MW)", 0.5, 2.0, 1.5, 0.1)
-transformer_mva = st.sidebar.slider("Transformer MV→LV (MVA)", 1.0, 5.0, 3.0, 0.1)
-lv_bus_mw = st.sidebar.slider("LV Switchboard Bus Section (MW)", 2.0, 4.5, 3.0, 0.1)
-pdu_mva = st.sidebar.slider("PDU Capacity (MVA)", 0.2, 0.6, 0.3, 0.05)
-mv_base = st.sidebar.slider("MV Buses Base (per system)", 1, 4, 2, 1)
-
-# Additional factors
-st.sidebar.subheader("⚙️ Additional Factors")
-
-voltage_levels = st.sidebar.selectbox("Voltage Levels", [2, 3], index=0, help="2=MV+LV, 3=HV+MV+LV")
-backup_gens = st.sidebar.slider("Backup Generators", 0, 10, 0, 1)
-cooling_type = st.sidebar.selectbox("Cooling Type", ["Air-cooled", "Liquid-cooled"])
-geo_factor = st.sidebar.selectbox(
-    "Geographic Climate", 
-    ["Temperate", "Cold", "Hot/Humid"],
-    help="Affects cooling load and PUE"
-)
-expansion_factor = st.sidebar.slider("Future Expansion Factor", 1.0, 1.5, 1.0, 0.05)
-power_factor = st.sidebar.slider("Power Factor", 0.9, 1.0, 0.95, 0.01)
-utility_incomers = st.sidebar.slider("Utility Incomers", 1, 3, 1, 1)
-
-# Reset button
-if st.sidebar.button("🔄 Reset to Defaults"):
+# Reset calibration button
+if st.sidebar.button("🔄 Reset Calibration to Defaults"):
     st.experimental_rerun()
 
-# Main calculation function
-def calculate_bus_counts():
-    results = {}
-    warnings = []
+# Study data with original logic
+TIER_FACTORS = {"Tier I": 1.0, "Tier II": 1.2, "Tier III": 1.5, "Tier IV": 2.0}
+BUS_PER_MW = {"Tier I": 1.5, "Tier II": 1.7, "Tier III": 2.0, "Tier IV": 2.3}
+
+STUDIES_DATA = {
+    'load_flow': {
+        'name': 'Load Flow Study', 
+        'base_hours_per_bus': 0.8, 
+        'complexity': 'Medium', 
+        'emoji': '⚡',
+        'calibration_factor': load_flow_factor
+    },
+    'short_circuit': {
+        'name': 'Short Circuit Study', 
+        'base_hours_per_bus': 1.0, 
+        'complexity': 'Medium-High', 
+        'emoji': '⚡',
+        'calibration_factor': short_circuit_factor
+    },
+    'pdc': {
+        'name': 'Protective Device Coordination', 
+        'base_hours_per_bus': 1.5, 
+        'complexity': 'High', 
+        'emoji': '🔧',
+        'calibration_factor': pdc_factor
+    },
+    'arc_flash': {
+        'name': 'Arc Flash Study', 
+        'base_hours_per_bus': 1.2, 
+        'complexity': 'High', 
+        'emoji': '🔥',
+        'calibration_factor': arc_flash_factor
+    }
+}
+
+RATES = {
+    'senior': {'hourly': senior_rate, 'allocation': senior_allocation, 'title': 'Senior Engineer/Manager'},
+    'mid': {'hourly': mid_rate, 'allocation': mid_allocation, 'title': 'Mid-level Engineer'},
+    'junior': {'hourly': junior_rate, 'allocation': junior_allocation, 'title': 'Junior Engineer'}
+}
+
+REPORT_MULTIPLIERS = {"Basic PDF": 1.0, "Detailed Report with Appendices": 1.8, "Client-Branded Report": 2.2}
+
+# Calculation function (EXACT PERPLEXITY LOGIC)
+def calculate_project_cost():
+    # Step 1: Load derivation (Perplexity Logic)
+    total_load = it_capacity + mechanical_load + house_load
     
-    # Step 1: Load derivation
-    if it_mw is not None:
-        calc_total_mw = adjusted_pue * it_mw
-        calc_it_mw = it_mw
-    else:
-        calc_total_mw = total_mw
-        calc_it_mw = total_mw / adjusted_pue
+    # Step 2: Bus count estimation with calibration (Perplexity Logic)
+    estimated_buses = math.ceil(total_load * BUS_PER_MW[tier_level] * bus_calibration)
     
-    non_it_mw = calc_total_mw - calc_it_mw
-    
-    # Apply cooling type adjustment
-    cooling_multiplier = 1.0
-    if cooling_type == "Liquid-cooled":
-        cooling_multiplier = 1.2
-        
-    # Apply geographic factor
-    geo_multiplier = 1.0
-    if geo_factor == "Cold":
-        geo_multiplier = 0.9
-    elif geo_factor == "Hot/Humid":
-        geo_multiplier = 1.1
-    
-    mech_mw = mech_fraction * non_it_mw * cooling_multiplier * geo_multiplier
-    house_mw = non_it_mw - (mech_mw / (cooling_multiplier * geo_multiplier))
-    
-    # Step 2: Base counts (N configuration)
-    lv_it_pcc = math.ceil(calc_it_mw / lv_bus_mw)
-    lv_mech_mcc = math.ceil(mech_mw / lv_bus_mw)
-    lv_house_pcc = math.ceil(house_mw / lv_bus_mw)
-    lv_total = lv_it_pcc + lv_mech_mcc + lv_house_pcc
-    
-    ups_lineups = math.ceil(calc_it_mw / ups_lineup)
-    ups_output_buses = ups_lineups
-    
-    pdus_total = math.ceil(calc_it_mw / pdu_mva)
-    
-    tx_count_n = math.ceil(calc_total_mw / (transformer_mva * power_factor))
-    
-    mv_buses = mv_base + (utility_incomers - 1)
-    
-    # Voltage level adjustments
-    voltage_additions = 0
-    if voltage_levels > 2:
-        voltage_additions = (voltage_levels - 2) * (tx_count_n + 1)
-    
-    # Generator additions
-    generator_additions = backup_gens * 2  # ATS buses
-    
-    # Core bus count (N configuration)
-    buses_core_n = (mv_buses + tx_count_n + lv_total + 
-                   ups_output_buses + pdus_total + 
-                   voltage_additions + generator_additions)
-    
-    # Step 3: Redundancy adjustments
-    if redundancy == "N (Base)":
-        total_buses = buses_core_n * expansion_factor
-        redundancy_factor = 1.0
-    elif redundancy == "Tier III (N+1)":
-        tx_count_adj = tx_count_n + 1
-        buses_adj = (mv_buses + tx_count_adj + lv_total + 
-                    ups_output_buses + pdus_total + 
-                    voltage_additions + generator_additions)
-        total_buses = buses_adj * expansion_factor * 1.15
-        redundancy_factor = 1.15
-    else:  # Tier IV (2N)
-        mv_2n = mv_buses * 2
-        tx_2n = tx_count_n * 2
-        lv_2n = lv_total * 2
-        ups_2n = ups_output_buses * 2
-        pdus_2n = pdus_total * 1.5  # Not fully duplicated
-        extras_2n = (voltage_additions + generator_additions) * 2
-        
-        buses_2n = mv_2n + tx_2n + lv_2n + ups_2n + pdus_2n + extras_2n
-        total_buses = buses_2n * expansion_factor
-        redundancy_factor = 2.0
-    
-    # Round final result
-    total_buses = math.ceil(total_buses)
-    
-    # Warnings
-    if total_buses > 500 and calc_total_mw < 20:
-        warnings.append("⚠️ Bus count seems high for facility size. Review parameters.")
-    if pdus_total > 500:
-        warnings.append("⚠️ PDU count exceeds 500. Consider larger PDU blocks.")
-    if calc_it_mw / calc_total_mw < 0.3:
-        warnings.append("⚠️ IT load fraction is low. Check PUE value.")
-    
-    # Store results
     results = {
-        'calc_total_mw': calc_total_mw,
-        'calc_it_mw': calc_it_mw,
-        'non_it_mw': non_it_mw,
-        'mech_mw': mech_mw,
-        'house_mw': house_mw,
-        'lv_it_pcc': lv_it_pcc,
-        'lv_mech_mcc': lv_mech_mcc,
-        'lv_house_pcc': lv_house_pcc,
-        'lv_total': lv_total,
-        'ups_lineups': ups_lineups,
-        'ups_output_buses': ups_output_buses,
-        'pdus_total': pdus_total,
-        'tx_count_n': tx_count_n,
-        'mv_buses': mv_buses,
-        'voltage_additions': voltage_additions,
-        'generator_additions': generator_additions,
-        'total_buses': total_buses,
-        'warnings': warnings,
-        'redundancy_factor': redundancy_factor
+        'project_info': {
+            'name': project_name,
+            'client': client_name,
+            'total_load': total_load,
+            'estimated_buses': estimated_buses,
+            'tier': tier_level,
+            'delivery': delivery_type,
+            'report_format': report_format
+        },
+        'studies': {},
+        'costs': {},
+        'calibration_info': {
+            'bus_calibration': bus_calibration,
+            'study_factors': {
+                'load_flow': load_flow_factor,
+                'short_circuit': short_circuit_factor,
+                'pdc': pdc_factor,
+                'arc_flash': arc_flash_factor
+            },
+            'allocations': {
+                'senior': senior_allocation,
+                'mid': mid_allocation, 
+                'junior': junior_allocation
+            },
+            'rates': {
+                'senior': senior_rate,
+                'mid': mid_rate,
+                'junior': junior_rate
+            }
+        }
+    }
+    
+    # Step 3: Study-wise calculations (Perplexity Logic)
+    total_study_hours = 0
+    total_study_cost = 0
+    tier_complexity = TIER_FACTORS[tier_level]
+    
+    for study_key, study_data in STUDIES_DATA.items():
+        if studies_selected.get(study_key, False):
+            # Calculate study hours with calibration (Perplexity Logic)
+            study_hours = (estimated_buses * 
+                          study_data['base_hours_per_bus'] * 
+                          study_data['calibration_factor'] * 
+                          tier_complexity)
+            
+            total_study_hours += study_hours
+            
+            # Calculate costs by level with custom allocations
+            senior_hours = study_hours * RATES['senior']['allocation']
+            mid_hours = study_hours * RATES['mid']['allocation']
+            junior_hours = study_hours * RATES['junior']['allocation']
+            
+            # Apply urgency multiplier if needed (Perplexity Logic)
+            rate_multiplier = urgency_multiplier if delivery_type == "Urgent" else 1.0
+            
+            senior_cost = senior_hours * RATES['senior']['hourly'] * rate_multiplier
+            mid_cost = mid_hours * RATES['mid']['hourly'] * rate_multiplier
+            junior_cost = junior_hours * RATES['junior']['hourly'] * rate_multiplier
+            
+            study_total_cost = senior_cost + mid_cost + junior_cost
+            total_study_cost += study_total_cost
+            
+            # Store study results
+            results['studies'][study_key] = {
+                'name': study_data['name'],
+                'emoji': study_data['emoji'],
+                'hours': study_hours,
+                'senior_hours': senior_hours,
+                'mid_hours': mid_hours,
+                'junior_hours': junior_hours,
+                'senior_cost': senior_cost,
+                'mid_cost': mid_cost,
+                'junior_cost': junior_cost,
+                'total_cost': study_total_cost,
+                'complexity': study_data['complexity']
+            }
+    
+    # Step 4: Additional costs (Perplexity Logic)
+    total_meeting_cost = client_meetings * meeting_cost
+    report_cost = 15000 * REPORT_MULTIPLIERS[report_format]
+    
+    # Step 5: Total project cost calculation (Perplexity Logic)
+    subtotal = total_study_cost + total_meeting_cost + report_cost
+    total_cost = subtotal * (1 + custom_margin/100)
+    
+    results['costs'] = {
+        'total_study_cost': total_study_cost,
+        'meeting_cost': total_meeting_cost,
+        'report_cost': report_cost,
+        'subtotal': subtotal,
+        'margin_amount': subtotal * (custom_margin/100),
+        'total_cost': total_cost,
+        'total_hours': total_study_hours
     }
     
     return results
 
 # Calculate results
-results = calculate_bus_counts()
+results = calculate_project_cost()
+
+# =============================================================================
+# MAIN DASHBOARD DISPLAY
+# =============================================================================
 
 # Display results
-col1, col2 = st.columns([2, 1])
+st.header("📊 Cost Analysis Results")
+
+# Key metrics in columns
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.header("📊 Results Summary")
-    
-    # Key metrics
-    metric_cols = st.columns(4)
-    with metric_cols[0]:
-        st.metric("Total Buses", f"{results['total_buses']:,}")
-    with metric_cols[1]:
-        st.metric("IT Load", f"{results['calc_it_mw']:.1f} MW")
-    with metric_cols[2]:
-        st.metric("Total Load", f"{results['calc_total_mw']:.1f} MW")
-    with metric_cols[3]:
-        st.metric("Effective PUE", f"{adjusted_pue:.2f}")
-    
-    # Detailed breakdown table
-    st.subheader("🔧 Component Breakdown")
-    
-    breakdown_data = {
-        'Component': [
-            'MV Buses',
-            'Transformers (MV→LV)',
-            'LV IT Buses (PCC)',
-            'LV Mechanical Buses (MCC)',
-            'LV House/Aux Buses',
-            'UPS Output Buses',
-            'PDUs',
-            'Voltage Level Additions',
-            'Generator Transfer Switches',
-            'Redundancy Adjustment',
-            'Expansion Factor'
-        ],
-        'Count': [
-            results['mv_buses'],
-            results['tx_count_n'],
-            results['lv_it_pcc'],
-            results['lv_mech_mcc'],
-            math.ceil(results['house_mw'] / lv_bus_mw),
-            results['ups_output_buses'],
-            results['pdus_total'],
-            results['voltage_additions'],
-            results['generator_additions'],
-            f"×{results['redundancy_factor']:.2f}",
-            f"×{expansion_factor:.2f}"
-        ],
-        'Explanation': [
-            f"Base {mv_base} + {utility_incomers-1} utility incomers",
-            f"{results['calc_total_mw']:.1f} MW ÷ {transformer_mva} MVA",
-            f"{results['calc_it_mw']:.1f} MW ÷ {lv_bus_mw} MW",
-            f"{results['mech_mw']:.1f} MW ÷ {lv_bus_mw} MW",
-            f"{results['house_mw']:.1f} MW ÷ {lv_bus_mw} MW",
-            f"{results['ups_lineups']} UPS lineups",
-            f"{results['calc_it_mw']:.1f} MW ÷ {pdu_mva} MVA",
-            f"{voltage_levels-2} extra voltage levels" if voltage_levels > 2 else "None",
-            f"{backup_gens} generators × 2 ATS buses" if backup_gens > 0 else "None",
-            redundancy,
-            "Future growth allowance"
-        ]
-    }
-    
-    df = pd.DataFrame(breakdown_data)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.markdown(f"""
+    <div class="cost-card">
+        <h3 style="color: #1f4e79; margin: 0;">💰 Total Cost</h3>
+        <h2 style="color: #2e8b57; margin: 5px 0;">₹{results['costs']['total_cost']:,.0f}</h2>
+        <p style="margin: 0; color: #666;">+{custom_margin}% margin</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    st.header("📈 Visualization")
-    
-    # Pie chart of bus distribution
-    bus_categories = {
-        'MV System': results['mv_buses'] + results['voltage_additions'],
-        'Transformers': results['tx_count_n'],
-        'LV Distribution': results['lv_total'],
-        'UPS Systems': results['ups_output_buses'],
-        'PDUs': results['pdus_total'],
-        'Generators': results['generator_additions']
-    }
-    
-    # Filter out zero values
-    bus_categories = {k: v for k, v in bus_categories.items() if v > 0}
-    
-    if bus_categories:
-        fig_pie = px.pie(
-            values=list(bus_categories.values()),
-            names=list(bus_categories.keys()),
-            title="Bus Distribution by Category"
-        )
-        fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig_pie, use_container_width=True)
-    
-    # Load breakdown
-    st.subheader("⚡ Load Breakdown")
-    load_data = {
-        'Load Type': ['IT Load', 'Mechanical', 'House/Aux'],
-        'MW': [results['calc_it_mw'], results['mech_mw'], results['house_mw']],
-        'Percentage': [
-            results['calc_it_mw']/results['calc_total_mw']*100,
-            results['mech_mw']/results['calc_total_mw']*100,
-            results['house_mw']/results['calc_total_mw']*100
-        ]
-    }
-    
-    fig_bar = px.bar(
-        load_data, 
-        x='Load Type', 
-        y='MW',
-        title="Load Distribution",
-        text='MW',
-        color='Load Type'
-    )
-    fig_bar.update_traces(texttemplate='%{text:.1f} MW', textposition='outside')
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.markdown(f"""
+    <div class="cost-card">
+        <h3 style="color: #1f4e79; margin: 0;">⏱️ Total Hours</h3>
+        <h2 style="color: #2e8b57; margin: 5px 0;">{results['costs']['total_hours']:.0f}</h2>
+        <p style="margin: 0; color: #666;">{len(results['studies'])} studies</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Warnings
-if results['warnings']:
-    st.header("⚠️ Validation Warnings")
-    for warning in results['warnings']:
-        st.warning(warning)
+with col3:
+    st.markdown(f"""
+    <div class="cost-card">
+        <h3 style="color: #1f4e79; margin: 0;">🔌 Buses</h3>
+        <h2 style="color: #2e8b57; margin: 5px 0;">{results['project_info']['estimated_buses']}</h2>
+        <p style="margin: 0; color: #666;">Bus Cal: {bus_calibration}x</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Sensitivity analysis
-st.header("🎯 Sensitivity Analysis")
+with col4:
+    st.markdown(f"""
+    <div class="cost-card">
+        <h3 style="color: #1f4e79; margin: 0;">⚡ Load</h3>
+        <h2 style="color: #2e8b57; margin: 5px 0;">{results['project_info']['total_load']:.1f}</h2>
+        <p style="margin: 0; color: #666;">MW total</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-sens_col1, sens_col2 = st.columns(2)
-
-with sens_col1:
-    st.subheader("PUE Impact")
-    pue_range = [pue - 0.2, pue - 0.1, pue, pue + 0.1, pue + 0.2]
-    bus_counts_pue = []
+# =============================================================================
+# SIMPLE PIE CHART FOR STUDY COSTS (WITHOUT PLOTLY)
+# =============================================================================
+if results['studies']:
+    st.header("📊 Study-wise Cost Distribution")
     
-    for test_pue in pue_range:
-        if it_mw is not None:
-            test_total = max(test_pue, 1.1) * it_mw
-        else:
-            test_total = total_mw
-        
-        # Simplified calculation for sensitivity
-        test_buses = math.ceil((test_total / transformer_mva * power_factor + 
-                              results['lv_total'] + results['ups_output_buses'] + 
-                              results['pdus_total']) * results['redundancy_factor'] * expansion_factor)
-        bus_counts_pue.append(test_buses)
+    # Create pie chart data
+    study_names = [study['name'] for study in results['studies'].values()]
+    study_costs = [study['total_cost'] for study in results['studies'].values()]
+    study_percentages = [cost/sum(study_costs)*100 for cost in study_costs]
     
-    sens_df_pue = pd.DataFrame({
-        'PUE': pue_range,
-        'Estimated Buses': bus_counts_pue
+    # Display pie chart using Streamlit's native chart
+    pie_df = pd.DataFrame({
+        'Study': study_names,
+        'Cost': study_costs,
+        'Percentage': study_percentages
     })
     
-    fig_sens_pue = px.line(sens_df_pue, x='PUE', y='Estimated Buses', 
-                          title='Bus Count vs PUE Sensitivity',
-                          markers=True)
-    fig_sens_pue.add_vline(x=pue, line_dash="dash", line_color="red", 
-                          annotation_text="Current PUE")
-    st.plotly_chart(fig_sens_pue, use_container_width=True)
-
-with sens_col2:
-    st.subheader("Load Impact")
-    if it_mw is not None:
-        base_load = it_mw
-        load_label = "IT Load (MW)"
-    else:
-        base_load = total_mw
-        load_label = "Total Load (MW)"
+    col_chart, col_data = st.columns([2, 1])
     
-    load_range = [base_load * 0.5, base_load * 0.75, base_load, 
-                  base_load * 1.25, base_load * 1.5]
-    bus_counts_load = []
-    
-    for test_load in load_range:
-        if it_mw is not None:
-            test_total = adjusted_pue * test_load
-        else:
-            test_total = test_load
+    with col_chart:
+        # Simple bar chart as pie chart alternative
+        st.bar_chart(pie_df.set_index('Study')['Cost'])
         
-        test_buses = math.ceil((test_total / transformer_mva * power_factor + 
-                              math.ceil(test_load / lv_bus_mw) * 3 + 
-                              math.ceil(test_load / ups_lineup) + 
-                              math.ceil(test_load / pdu_mva)) * 
-                              results['redundancy_factor'] * expansion_factor)
-        bus_counts_load.append(test_buses)
+    with col_data:
+        st.subheader("💰 Cost Breakdown")
+        for i, (name, cost, pct) in enumerate(zip(study_names, study_costs, study_percentages)):
+            emoji = list(results['studies'].values())[i]['emoji']
+            st.markdown(f"""
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 5px 0;">
+                <strong>{emoji} {name}</strong><br>
+                ₹{cost:,.0f} ({pct:.1f}%)
+            </div>
+            """, unsafe_allow_html=True)
+
+# =============================================================================
+# CALIBRATION STATUS DISPLAY
+# =============================================================================
+st.header("🔧 Current Calibration Settings")
+
+cal_col1, cal_col2, cal_col3 = st.columns(3)
+
+with cal_col1:
+    st.markdown(f"""
+    <div class="calibration-section">
+        <h4>🔌 Bus Count Calibration</h4>
+        <p><strong>Factor:</strong> {bus_calibration}x</p>
+        <p><strong>Tier:</strong> {tier_level} ({BUS_PER_MW[tier_level]} buses/MW base)</p>
+        <p><strong>Estimated Buses:</strong> {results['project_info']['estimated_buses']}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with cal_col2:
+    st.markdown(f"""
+    <div class="calibration-section">
+        <h4>📊 Study Factors</h4>
+        <p><strong>Load Flow:</strong> {load_flow_factor}x</p>
+        <p><strong>Short Circuit:</strong> {short_circuit_factor}x</p>
+        <p><strong>PDC:</strong> {pdc_factor}x</p>
+        <p><strong>Arc Flash:</strong> {arc_flash_factor}x</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with cal_col3:
+    st.markdown(f"""
+    <div class="calibration-section">
+        <h4>👥 Resource Allocation</h4>
+        <p><strong>Senior:</strong> {senior_allocation*100:.0f}% @ ₹{senior_rate}/hr</p>
+        <p><strong>Mid:</strong> {mid_allocation*100:.0f}% @ ₹{mid_rate}/hr</p>
+        <p><strong>Junior:</strong> {junior_allocation*100:.0f}% @ ₹{junior_rate}/hr</p>
+        <p><strong>Meeting Cost:</strong> ₹{meeting_cost:,}/meeting</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Study breakdown with calibration info
+if results['studies']:
+    st.header("📋 Detailed Study Analysis")
     
-    sens_df_load = pd.DataFrame({
-        load_label: load_range,
-        'Estimated Buses': bus_counts_load
-    })
+    for study_key, study in results['studies'].items():
+        calibration_factor = STUDIES_DATA[study_key]['calibration_factor']
+        base_hours = STUDIES_DATA[study_key]['base_hours_per_bus']
+        
+        st.markdown(f"""
+        <div class="study-item">
+            <h4>{study['emoji']} {study['name']}</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <p><strong>Complexity:</strong> {study['complexity']}</p>
+                    <p><strong>Base Hours/Bus:</strong> {base_hours}</p>
+                    <p><strong>Calibration Factor:</strong> {calibration_factor}x</p>
+                    <p><strong>Tier Multiplier:</strong> {TIER_FACTORS[tier_level]}x</p>
+                    <p><strong>Total Hours:</strong> {study['hours']:.1f}</p>
+                </div>
+                <div>
+                    <p><strong>Senior:</strong> {study['senior_hours']:.1f}h × ₹{senior_rate} = ₹{study['senior_cost']:,.0f}</p>
+                    <p><strong>Mid:</strong> {study['mid_hours']:.1f}h × ₹{mid_rate} = ₹{study['mid_cost']:,.0f}</p>
+                    <p><strong>Junior:</strong> {study['junior_hours']:.1f}h × ₹{junior_rate} = ₹{study['junior_cost']:,.0f}</p>
+                    <p style="border-top: 2px solid #2e8b57; padding-top: 10px;"><strong>Total Cost: ₹{study['total_cost']:,.0f}</strong></p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# Additional costs breakdown
+st.subheader("💼 Additional Cost Components")
+
+additional_col1, additional_col2, additional_col3 = st.columns(3)
+
+with additional_col1:
+    st.markdown(f"""
+    <div class="study-item">
+        <h4>🤝 Client Meetings</h4>
+        <p><strong>{client_meetings} meetings × ₹{meeting_cost:,}</strong></p>
+        <h3 style="color: #2e8b57; margin: 0;">₹{results['costs']['meeting_cost']:,.0f}</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+with additional_col2:
+    st.markdown(f"""
+    <div class="study-item">
+        <h4>📄 Report Preparation</h4>
+        <p><strong>{report_format}</strong></p>
+        <p>Base: ₹15,000 × {REPORT_MULTIPLIERS[report_format]}x</p>
+        <h3 style="color: #2e8b57; margin: 0;">₹{results['costs']['report_cost']:,.0f}</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+with additional_col3:
+    st.markdown(f"""
+    <div class="study-item">
+        <h4>📈 Profit Margin</h4>
+        <p><strong>{custom_margin}% on subtotal</strong></p>
+        <p>₹{results['costs']['subtotal']:,.0f} × {custom_margin}%</p>
+        <h3 style="color: #2e8b57; margin: 0;">₹{results['costs']['margin_amount']:,.0f}</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+else:
+    st.warning("⚠️ No studies selected. Please select at least one study type from the sidebar.")
+
+# Technical specifications
+with st.expander("🔧 Technical Specifications & Methodology"):
+    st.markdown("""
+    ### 📊 Calculation Methodology (Perplexity AI Labs Logic)
     
-    fig_sens_load = px.line(sens_df_load, x=load_label, y='Estimated Buses',
-                           title=f'Bus Count vs {load_label} Sensitivity',
-                           markers=True)
-    fig_sens_load.add_vline(x=base_load, line_dash="dash", line_color="red",
-                           annotation_text="Current Load")
-    st.plotly_chart(fig_sens_load, use_container_width=True)
-
-# Export functionality
-st.header("💾 Export Results")
-
-export_col1, export_col2 = st.columns(2)
-
-with export_col1:
-    # CSV export
-    export_df = pd.DataFrame([{
-        'Parameter': 'Total Estimated Buses',
-        'Value': results['total_buses'],
-        'Unit': 'count'
-    }, {
-        'Parameter': 'IT Load',
-        'Value': round(results['calc_it_mw'], 2),
-        'Unit': 'MW'
-    }, {
-        'Parameter': 'Total Facility Load',
-        'Value': round(results['calc_total_mw'], 2),
-        'Unit': 'MW'
-    }, {
-        'Parameter': 'Effective PUE',
-        'Value': round(adjusted_pue, 2),
-        'Unit': 'ratio'
-    }, {
-        'Parameter': 'Redundancy Level',
-        'Value': redundancy,
-        'Unit': 'tier'
-    }, {
-        'Parameter': 'Data Center Type',
-        'Value': dc_type,
-        'Unit': 'category'
-    }])
+    **Bus Count Estimation:**
+    ```
+    Estimated_Buses = ⌈Total_Load × Tier_Factor × Bus_Calibration_Factor⌉
+    ```
     
-    csv = export_df.to_csv(index=False)
-    st.download_button(
-        label="📄 Download CSV Report",
-        data=csv,
-        file_name=f"dc_bus_estimate_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-        mime="text/csv"
-    )
-
-with export_col2:
-    # Summary text export
-    summary_text = f"""
-DATA CENTER BUS COUNT ESTIMATION REPORT
-Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-INPUTS:
-- Starting Point: {input_type}
-- Load: {it_mw if it_mw else total_mw} MW
-- PUE: {pue} (Adjusted: {adjusted_pue:.2f})
-- Data Center Type: {dc_type}
-- Redundancy: {redundancy}
-- Cooling: {cooling_type}
-- Climate: {geo_factor}
-
-RESULTS:
-- Total Estimated Buses: {results['total_buses']:,}
-- IT Load: {results['calc_it_mw']:.1f} MW
-- Total Load: {results['calc_total_mw']:.1f} MW
-- Mechanical Load: {results['mech_mw']:.1f} MW
-
-BREAKDOWN:
-- MV Buses: {results['mv_buses']}
-- Transformers: {results['tx_count_n']}
-- LV Buses: {results['lv_total']}
-- UPS Buses: {results['ups_output_buses']}
-- PDUs: {results['pdus_total']}
-
-VALIDATION:
-{chr(10).join(results['warnings']) if results['warnings'] else 'No warnings detected.'}
-"""
+    **Study Hours Calculation:**
+    ```
+    Study_Hours = Bus_Count × Base_Hours_per_Bus × Study_Calibration_Factor × Tier_Complexity_Factor
+    ```
     
-    st.download_button(
-        label="📋 Download Text Summary",
-        data=summary_text,
-        file_name=f"dc_bus_summary_{datetime.now().strftime('%Y%m%d_%H%M')}.txt",
-        mime="text/plain"
-    )
+    **Cost Calculation:**
+    ```
+    Study_Cost = (Senior_Hours × Senior_Rate + Mid_Hours × Mid_Rate + Junior_Hours × Junior_Rate) × Urgency_Factor
+    Total_Cost = (Study_Costs + Meeting_Costs + Report_Costs) × (1 + Margin%)
+    ```
+    
+    **Current Calibration Values:**
+    - Bus Calibration Factor: {bus_calibration}x
+    - Study Factors: LF:{load_flow_factor}x, SC:{short_circuit_factor}x, PDC:{pdc_factor}x, AF:{arc_flash_factor}x
+    - Resource Allocation: Sr:{senior_allocation*100:.0f}%, Mid:{mid_allocation*100:.0f}%, Jr:{junior_allocation*100:.0f}%
+    - Hourly Rates: Sr:₹{senior_rate}, Mid:₹{mid_rate}, Jr:₹{junior_rate}
+    - Urgency Multiplier: {urgency_multiplier}x
+    """.format(
+        bus_calibration=bus_calibration,
+        load_flow_factor=load_flow_factor,
+        short_circuit_factor=short_circuit_factor,
+        pdc_factor=pdc_factor,
+        arc_flash_factor=arc_flash_factor,
+        senior_allocation=senior_allocation,
+        mid_allocation=mid_allocation,
+        junior_allocation=junior_allocation,
+        senior_rate=senior_rate,
+        mid_rate=mid_rate,
+        junior_rate=junior_rate,
+        urgency_multiplier=urgency_multiplier
+    ))
 
 # Footer
 st.markdown("---")
-st.markdown("**References:** Uptime Institute Data Center Standards,Reliability Standards, Industry General Practices")
-st.markdown("*Developed for rough estimation applications. Validate results against specific project requirements.*")
-st.markdown("*Developed By: Abhishek D*")
+st.markdown("""
+<div style="text-align: center; color: #666; padding: 20px;">
+    <p><b>⚡ Data Center Power System Studies Cost Estimator</b></p>
+    <p>🚀 Developed by <b>Abhishek Diwanji</b> | Power Systems Engineering Expert</p>
+    <p>📧 For professional consulting, custom tools, and technical support</p>
+    <p><i>Enhanced Version 2.0 | Full Calibration Controls</i></p>
+</div>
+""", unsafe_allow_html=True)
