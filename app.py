@@ -8,62 +8,342 @@ st.set_page_config(
     page_title="DC Power Studies Cost Estimator | Abhishek Diwanji",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for professional styling
+# Advanced CSS for Professional Dark Theme
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Global Styling */
+    .main > div {
+        padding-top: 2rem;
+    }
+    
+    .stApp {
+        background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Header Styling */
     .main-header {
-        background: linear-gradient(90deg, #1f4e79 0%, #2e8b57 100%);
-        padding: 20px;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+        padding: 2rem;
+        border-radius: 16px;
         color: white;
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(20, 184, 166, 0.3);
     }
+    
+    .main-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .main-header h2 {
+        font-size: 1.2rem;
+        font-weight: 400;
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+    }
+    
+    /* Developer Credit */
     .developer-credit {
-        background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
-        padding: 15px;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+        padding: 1rem 2rem;
+        border-radius: 12px;
         color: white;
         text-align: center;
-        font-weight: bold;
-        margin: 20px 0;
+        font-weight: 600;
+        margin: 1rem 0 2rem 0;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
     }
+    
+    /* Section Headers */
+    .section-header {
+        background: rgba(20, 184, 166, 0.1);
+        border-left: 4px solid #14b8a6;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin: 1.5rem 0 1rem 0;
+        backdrop-filter: blur(10px);
+    }
+    
+    .section-header h2 {
+        color: #14b8a6;
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    /* Cards */
+    .metric-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(20, 184, 166, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 0.5rem 0;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #14b8a6, #06b6d4);
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(20, 184, 166, 0.2);
+        border-color: rgba(20, 184, 166, 0.4);
+    }
+    
+    .metric-card h3 {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin: 0 0 0.5rem 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .metric-card .value {
+        color: #14b8a6;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1;
+    }
+    
+    .metric-card .subtitle {
+        color: #64748b;
+        font-size: 0.8rem;
+        margin: 0.5rem 0 0 0;
+    }
+    
+    /* Study Cards */
+    .study-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(100, 116, 139, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .study-card:hover {
+        border-color: rgba(20, 184, 166, 0.4);
+        box-shadow: 0 4px 20px rgba(20, 184, 166, 0.1);
+    }
+    
+    .study-card h4 {
+        color: #f1f5f9;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .study-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .study-detail-item {
+        color: #cbd5e1;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .study-detail-item strong {
+        color: #f1f5f9;
+    }
+    
+    .cost-highlight {
+        background: rgba(20, 184, 166, 0.1);
+        border: 1px solid rgba(20, 184, 166, 0.3);
+        border-radius: 8px;
+        padding: 0.75rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+    
+    .cost-highlight .amount {
+        color: #14b8a6;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    /* Input Styling */
+    .stSelectbox > div > div {
+        background-color: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 8px;
+        color: #f1f5f9;
+    }
+    
+    .stNumberInput > div > div > input {
+        background-color: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 8px;
+        color: #f1f5f9;
+    }
+    
+    .stTextInput > div > div > input {
+        background-color: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 8px;
+        color: #f1f5f9;
+    }
+    
+    .stCheckbox > label {
+        color: #cbd5e1;
+        font-weight: 500;
+    }
+    
+    .stSlider > div > div > div {
+        color: #14b8a6;
+    }
+    
+    /* Calibration Section */
+    .calibration-container {
+        background: rgba(15, 20, 25, 0.8);
+        border: 1px solid rgba(20, 184, 166, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        margin: 2rem 0;
+        backdrop-filter: blur(10px);
+    }
+    
+    .calibration-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+    }
+    
+    .calibration-header h2 {
+        color: #14b8a6;
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .calibration-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .calibration-group {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(100, 116, 139, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    
+    .calibration-group h4 {
+        color: #06b6d4;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+    }
+    
+    /* Results Section */
+    .results-container {
+        background: rgba(15, 20, 25, 0.6);
+        border: 1px solid rgba(20, 184, 166, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        margin: 2rem 0;
+        backdrop-filter: blur(15px);
+    }
+    
+    /* Custom Text Colors */
+    .stMarkdown {
+        color: #e2e8f0;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        color: #f1f5f9;
+    }
+    
+    /* Sidebar Styling */
+    .css-1d391kg {
+        background-color: rgba(15, 20, 25, 0.95);
+        backdrop-filter: blur(10px);
+    }
+    
+    .css-1d391kg .stSelectbox label,
+    .css-1d391kg .stNumberInput label,
+    .css-1d391kg .stTextInput label,
+    .css-1d391kg .stSlider label {
+        color: #e2e8f0;
+        font-weight: 500;
+    }
+    
+    /* Button Styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);
+    }
+    
+    /* Disclaimer Box */
     .disclaimer-box {
-        background-color: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 8px;
-        padding: 15px;
-        margin: 20px 0;
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        backdrop-filter: blur(10px);
     }
-    .cost-card {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 4px solid #1f4e79;
-        margin: 10px 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    
+    .disclaimer-box h4 {
+        color: #f59e0b;
+        margin: 0 0 1rem 0;
     }
-    .study-item {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-        border-left: 3px solid #2e8b57;
-    }
-    .calibration-section {
-        background: #e8f4f8;
-        padding: 20px;
-        border-radius: 10px;
-        margin: 20px 0;
-        border: 2px solid #1f4e79;
+    
+    .disclaimer-box p {
+        color: #fbbf24;
+        margin: 0.5rem 0;
+        line-height: 1.6;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Header with branding
+# Header
 st.markdown("""
 <div class="main-header">
     <h1>⚡ Data Center Power System Studies</h1>
@@ -72,11 +352,10 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Developer credit
+# Developer Credit
 st.markdown("""
 <div class="developer-credit">
-    🚀 Developed by <strong>Abhishek Diwanji</strong> | Power Systems Engineering Expert 
-    <br>📧 Contact for Custom Solutions & Professional Consulting
+    🚀 Developed by <strong>Abhishek Diwanji</strong> | Power Systems Engineering Expert
 </div>
 """, unsafe_allow_html=True)
 
@@ -85,478 +364,331 @@ st.markdown("""
 <div class="disclaimer-box">
     <h4>⚠️ Important Disclaimer</h4>
     <p><strong>Bus Count Estimation:</strong> This tool focuses on cost estimation for power system studies. 
-    Bus count calculations are handled by a separate specialized tool which will be integrated in future versions. 
-    Current bus estimates are for costing purposes only.</p>
+    Bus count calculations are handled by a separate specialized tool which will be integrated in future versions.</p>
     <p><strong>Professional Use:</strong> Results are estimates based on industry standards. 
     Always validate with qualified electrical engineers for actual project implementation.</p>
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar inputs
-st.sidebar.header("📊 Project Configuration")
+# Main container
+with st.container():
+    # Project Information Section
+    st.markdown("""
+    <div class="section-header">
+        <h2>📋 Project Information</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        project_name = st.text_input("Project Name", value="XXX", label_visibility="visible")
+    with col2:
+        it_capacity = st.number_input("IT Capacity (MW)", min_value=0.1, max_value=100.0, value=10.0, step=0.1)
+    with col3:
+        mechanical_load = st.number_input("Mechanical Load (MW)", min_value=0.1, max_value=50.0, value=7.0, step=0.1)
+    with col4:
+        house_load = st.number_input("House/Auxiliary Load (MW)", min_value=0.1, max_value=20.0, value=3.0, step=0.1)
+    
+    col5, col6, col7, col8 = st.columns(4)
+    
+    with col5:
+        tier_level = st.selectbox("Tier Level", ["Tier I", "Tier II", "Tier III", "Tier IV (Fault Tolerant)"], index=3)
+    with col6:
+        delivery_type = st.selectbox("Type of Delivery", ["Standard", "Urgent"])
+    with col7:
+        report_format = st.selectbox("Report Format", ["Basic PDF", "Detailed Report with Appendices", "Client-Branded Report"], index=1)
+    with col8:
+        client_meetings = st.number_input("Number of Client Meetings", min_value=0, max_value=10, value=3, step=1)
+    
+    col9, _ = st.columns([1, 3])
+    with col9:
+        custom_margin = st.number_input("Custom Margins (%)", min_value=0, max_value=30, value=15, step=1)
 
-# Project Information
-st.sidebar.subheader("🏢 Project Details")
-project_name = st.sidebar.text_input("Project Name", value="Data Center Power Studies")
-client_name = st.sidebar.text_input("Client Name", value="")
+# Bus Count and Studies Section
+col_left, col_right = st.columns([1, 1])
 
-# Load inputs
-st.sidebar.subheader("⚡ Electrical Load Parameters")
-it_capacity = st.sidebar.number_input("IT Capacity (MW)", min_value=0.1, max_value=100.0, value=5.0, step=0.1)
-mechanical_load = st.sidebar.number_input("Mechanical Load (MW)", min_value=0.1, max_value=50.0, value=2.0, step=0.1)
-house_load = st.sidebar.number_input("House/Auxiliary Load (MW)", min_value=0.1, max_value=20.0, value=0.5, step=0.1)
-
-# Tier and delivery
-tier_level = st.sidebar.selectbox("Tier Level", ["Tier I", "Tier II", "Tier III", "Tier IV"], index=2)
-delivery_type = st.sidebar.selectbox("Delivery Type", ["Standard", "Urgent"])
-report_format = st.sidebar.selectbox("Report Format", ["Basic PDF", "Detailed Report with Appendices", "Client-Branded Report"], index=1)
-
-# Studies selection
-st.sidebar.subheader("📋 Studies Required")
-studies_selected = {}
-studies_selected['load_flow'] = st.sidebar.checkbox("Load Flow Study", value=True)
-studies_selected['short_circuit'] = st.sidebar.checkbox("Short Circuit Study", value=True)
-studies_selected['pdc'] = st.sidebar.checkbox("Protective Device Coordination", value=True)
-studies_selected['arc_flash'] = st.sidebar.checkbox("Arc Flash Study", value=True)
-
-# Additional parameters
-client_meetings = st.sidebar.slider("Expected Client Meetings", 0, 10, 2, 1)
-custom_margin = st.sidebar.slider("Custom Margin (%)", 0, 30, 15, 1)
-
-# =============================================================================
-# CALIBRATION CONTROL SECTION
-# =============================================================================
-st.sidebar.subheader("🔧 Calibration & Customization")
-
-# Bus Count Calibration
-bus_calibration = st.sidebar.slider(
-    "Bus Count Calibration Factor", 
-    min_value=0.5, max_value=2.0, value=1.0, step=0.1,
-    help="Adjust bus count estimation based on historical project data"
-)
-
-# Study-wise Calibration Factors
-st.sidebar.write("**Study Calibration Factors:**")
-load_flow_factor = st.sidebar.slider("Load Flow Factor", 0.5, 2.0, 1.0, 0.1)
-short_circuit_factor = st.sidebar.slider("Short Circuit Factor", 0.5, 2.0, 1.0, 0.1)
-pdc_factor = st.sidebar.slider("PDC Factor", 0.5, 2.0, 1.0, 0.1)
-arc_flash_factor = st.sidebar.slider("Arc Flash Factor", 0.5, 2.0, 1.0, 0.1)
-
-# Level-wise Work Allocation (Customizable)
-st.sidebar.write("**Resource Allocation (%):**")
-senior_allocation = st.sidebar.slider("Senior Engineer %", 10, 40, 20, 1) / 100
-mid_allocation = st.sidebar.slider("Mid-level Engineer %", 20, 50, 30, 1) / 100
-junior_allocation = st.sidebar.slider("Junior Engineer %", 30, 70, 50, 1) / 100
-
-# Normalize allocations to 100%
-total_allocation = senior_allocation + mid_allocation + junior_allocation
-if total_allocation != 1.0:
-    senior_allocation = senior_allocation / total_allocation
-    mid_allocation = mid_allocation / total_allocation
-    junior_allocation = junior_allocation / total_allocation
-    st.sidebar.info(f"Allocations normalized to 100%: Sr:{senior_allocation*100:.0f}%, Mid:{mid_allocation*100:.0f}%, Jr:{junior_allocation*100:.0f}%")
-
-# Hourly Rates (Customizable)
-st.sidebar.write("**Hourly Rates (₹):**")
-senior_rate = st.sidebar.slider("Senior Engineer Rate", 800, 2000, 1200, 50)
-mid_rate = st.sidebar.slider("Mid-level Engineer Rate", 400, 1000, 650, 25)
-junior_rate = st.sidebar.slider("Junior Engineer Rate", 200, 600, 350, 25)
-
-# Other Customizable Factors
-meeting_cost = st.sidebar.slider("Cost per Meeting (₹)", 3000, 15000, 8000, 500)
-urgency_multiplier = st.sidebar.slider("Urgent Delivery Multiplier", 1.1, 2.0, 1.3, 0.1)
-
-# Reset calibration button
-if st.sidebar.button("🔄 Reset Calibration to Defaults"):
-    st.experimental_rerun()
-
-# Study data with original logic
-TIER_FACTORS = {"Tier I": 1.0, "Tier II": 1.2, "Tier III": 1.5, "Tier IV": 2.0}
-BUS_PER_MW = {"Tier I": 1.5, "Tier II": 1.7, "Tier III": 2.0, "Tier IV": 2.3}
-
-STUDIES_DATA = {
-    'load_flow': {
-        'name': 'Load Flow Study', 
-        'base_hours_per_bus': 0.8, 
-        'complexity': 'Medium', 
-        'emoji': '⚡',
-        'calibration_factor': load_flow_factor
-    },
-    'short_circuit': {
-        'name': 'Short Circuit Study', 
-        'base_hours_per_bus': 1.0, 
-        'complexity': 'Medium-High', 
-        'emoji': '⚡',
-        'calibration_factor': short_circuit_factor
-    },
-    'pdc': {
-        'name': 'Protective Device Coordination', 
-        'base_hours_per_bus': 1.5, 
-        'complexity': 'High', 
-        'emoji': '🔧',
-        'calibration_factor': pdc_factor
-    },
-    'arc_flash': {
-        'name': 'Arc Flash Study', 
-        'base_hours_per_bus': 1.2, 
-        'complexity': 'High', 
-        'emoji': '🔥',
-        'calibration_factor': arc_flash_factor
-    }
-}
-
-RATES = {
-    'senior': {'hourly': senior_rate, 'allocation': senior_allocation, 'title': 'Senior Engineer/Manager'},
-    'mid': {'hourly': mid_rate, 'allocation': mid_allocation, 'title': 'Mid-level Engineer'},
-    'junior': {'hourly': junior_rate, 'allocation': junior_allocation, 'title': 'Junior Engineer'}
-}
-
-REPORT_MULTIPLIERS = {"Basic PDF": 1.0, "Detailed Report with Appendices": 1.8, "Client-Branded Report": 2.2}
-
-# Calculation function (EXACT PERPLEXITY LOGIC)
-def calculate_project_cost():
-    # Step 1: Load derivation (Perplexity Logic)
+with col_left:
+    st.markdown("""
+    <div class="section-header">
+        <h2>🔌 Bus Count Estimation</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Bus count calibration
+    bus_calibration = st.slider("Bus Count Calibration Factor", 0.5, 2.0, 1.3, 0.1)
+    
+    # Calculate basic info
     total_load = it_capacity + mechanical_load + house_load
+    tier_mapping = {"Tier I": 1.5, "Tier II": 1.7, "Tier III": 2.0, "Tier IV (Fault Tolerant)": 2.3}
+    tier_key = "Tier IV" if "Fault Tolerant" in tier_level else tier_level
+    estimated_buses = math.ceil(total_load * tier_mapping[tier_key] * bus_calibration)
     
-    # Step 2: Bus count estimation with calibration (Perplexity Logic)
-    estimated_buses = math.ceil(total_load * BUS_PER_MW[tier_level] * bus_calibration)
+    # Display bus count info
+    st.markdown(f"""
+    <div class="metric-card">
+        <h3>Total Load:</h3>
+        <p class="value">{total_load:.1f} MW</p>
+    </div>
     
-    results = {
-        'project_info': {
-            'name': project_name,
-            'client': client_name,
-            'total_load': total_load,
-            'estimated_buses': estimated_buses,
-            'tier': tier_level,
-            'delivery': delivery_type,
-            'report_format': report_format
-        },
-        'studies': {},
-        'costs': {},
-        'calibration_info': {
-            'bus_calibration': bus_calibration,
-            'study_factors': {
-                'load_flow': load_flow_factor,
-                'short_circuit': short_circuit_factor,
-                'pdc': pdc_factor,
-                'arc_flash': arc_flash_factor
-            },
-            'allocations': {
-                'senior': senior_allocation,
-                'mid': mid_allocation, 
-                'junior': junior_allocation
-            },
-            'rates': {
-                'senior': senior_rate,
-                'mid': mid_rate,
-                'junior': junior_rate
-            }
+    <div class="metric-card">
+        <h3>Estimated Buses:</h3>
+        <p class="value">{estimated_buses} buses</p>
+        <p class="subtitle">{tier_level} • {tier_mapping[tier_key]} buses/MW • 99.995% uptime</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col_right:
+    st.markdown("""
+    <div class="section-header">
+        <h2>📋 Studies Required</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Studies selection with descriptions
+    studies_selected = {}
+    
+    col_s1, col_s2 = st.columns([1, 4])
+    with col_s1:
+        studies_selected['load_flow'] = st.checkbox("", value=True, key="lf")
+    with col_s2:
+        st.markdown("**Load Flow Study**<br><small>Steady-state voltage and power flow analysis</small>", unsafe_allow_html=True)
+    
+    col_s3, col_s4 = st.columns([1, 4])
+    with col_s3:
+        studies_selected['short_circuit'] = st.checkbox("", value=True, key="sc")
+    with col_s4:
+        st.markdown("**Short Circuit Study**<br><small>Fault current calculations and equipment verification</small>", unsafe_allow_html=True)
+    
+    col_s5, col_s6 = st.columns([1, 4])
+    with col_s5:
+        studies_selected['pdc'] = st.checkbox("", value=True, key="pdc")
+    with col_s6:
+        st.markdown("**Protective Device Coordination**<br><small>Relay coordination and protection settings</small>", unsafe_allow_html=True)
+    
+    col_s7, col_s8 = st.columns([1, 4])
+    with col_s7:
+        studies_selected['arc_flash'] = st.checkbox("", value=True, key="af")
+    with col_s8:
+        st.markdown("**Arc Flash Study**<br><small>Incident energy calculations and PPE requirements</small>", unsafe_allow_html=True)
+    
+    if st.button("Select All", key="select_all"):
+        for key in studies_selected:
+            studies_selected[key] = True
+
+# Calibration Controls (Expandable Section)
+with st.expander("🔧 Calibration Controls", expanded=False):
+    st.markdown("""
+    <div class="calibration-container">
+        <div class="calibration-header">
+            <h2>Calibration Controls</h2>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    cal_col1, cal_col2, cal_col3 = st.columns(3)
+    
+    with cal_col1:
+        st.markdown("#### Hourly Rates (₹)")
+        senior_rate = st.number_input("Senior Engineer", min_value=800, max_value=2000, value=1200, step=50)
+        mid_rate = st.number_input("Mid-level Engineer", min_value=400, max_value=1000, value=650, step=25)
+        junior_rate = st.number_input("Junior Engineer", min_value=200, max_value=600, value=350, step=25)
+    
+    with cal_col2:
+        st.markdown("#### Study Complexity Factors")
+        load_flow_factor = st.slider("Load Flow (base: 0.8h/bus)", 0.5, 2.0, 1.0, 0.1)
+        short_circuit_factor = st.slider("Short Circuit (base: 1.0h/bus)", 0.5, 2.0, 1.0, 0.1)
+        pdc_factor = st.slider("PDC (base: 1.5h/bus)", 0.5, 2.0, 1.0, 0.1)
+        arc_flash_factor = st.slider("Arc Flash (base: 1.2h/bus)", 0.5, 2.0, 1.0, 0.1)
+    
+    with cal_col3:
+        st.markdown("#### Other Factors")
+        urgency_multiplier = st.slider("Urgent Delivery Multiplier", 1.1, 2.0, 1.3, 0.1)
+        meeting_cost = st.number_input("Cost per Meeting (₹)", min_value=3000, max_value=15000, value=8000, step=500)
+        
+        st.markdown("#### Resource Allocation (%)")
+        senior_allocation = st.slider("Senior Engineer %", 10, 40, 20, 1) / 100
+        mid_allocation = st.slider("Mid-level Engineer %", 20, 50, 30, 1) / 100
+        junior_allocation = st.slider("Junior Engineer %", 30, 70, 50, 1) / 100
+        
+        # Normalize allocations
+        total_allocation = senior_allocation + mid_allocation + junior_allocation
+        if total_allocation != 1.0:
+            senior_allocation = senior_allocation / total_allocation
+            mid_allocation = mid_allocation / total_allocation
+            junior_allocation = junior_allocation / total_allocation
+    
+    col_reset, col_copy = st.columns([1, 1])
+    with col_reset:
+        if st.button("Reset to Defaults", type="secondary"):
+            st.experimental_rerun()
+
+# Calculations
+TIER_FACTORS = {"Tier I": 1.0, "Tier II": 1.2, "Tier III": 1.5, "Tier IV": 2.0}
+STUDIES_DATA = {
+    'load_flow': {'name': 'Load Flow Study', 'base_hours_per_bus': 0.8, 'factor': load_flow_factor, 'emoji': '⚡'},
+    'short_circuit': {'name': 'Short Circuit Study', 'base_hours_per_bus': 1.0, 'factor': short_circuit_factor, 'emoji': '⚡'},
+    'pdc': {'name': 'Protective Device Coordination', 'base_hours_per_bus': 1.5, 'factor': pdc_factor, 'emoji': '🔧'},
+    'arc_flash': {'name': 'Arc Flash Study', 'base_hours_per_bus': 1.2, 'factor': arc_flash_factor, 'emoji': '🔥'}
+}
+
+# Calculate costs
+tier_complexity = TIER_FACTORS[tier_key]
+total_study_hours = 0
+total_study_cost = 0
+study_results = {}
+
+for study_key, study_data in STUDIES_DATA.items():
+    if studies_selected.get(study_key, False):
+        study_hours = estimated_buses * study_data['base_hours_per_bus'] * study_data['factor'] * tier_complexity
+        total_study_hours += study_hours
+        
+        senior_hours = study_hours * senior_allocation
+        mid_hours = study_hours * mid_allocation
+        junior_hours = study_hours * junior_allocation
+        
+        rate_multiplier = urgency_multiplier if delivery_type == "Urgent" else 1.0
+        
+        senior_cost = senior_hours * senior_rate * rate_multiplier
+        mid_cost = mid_hours * mid_rate * rate_multiplier
+        junior_cost = junior_hours * junior_rate * rate_multiplier
+        
+        study_total_cost = senior_cost + mid_cost + junior_cost
+        total_study_cost += study_total_cost
+        
+        study_results[study_key] = {
+            'name': study_data['name'],
+            'emoji': study_data['emoji'],
+            'hours': study_hours,
+            'senior_hours': senior_hours,
+            'mid_hours': mid_hours,
+            'junior_hours': junior_hours,
+            'senior_cost': senior_cost,
+            'mid_cost': mid_cost,
+            'junior_cost': junior_cost,
+            'total_cost': study_total_cost
         }
-    }
-    
-    # Step 3: Study-wise calculations (Perplexity Logic)
-    total_study_hours = 0
-    total_study_cost = 0
-    tier_complexity = TIER_FACTORS[tier_level]
-    
-    for study_key, study_data in STUDIES_DATA.items():
-        if studies_selected.get(study_key, False):
-            # Calculate study hours with calibration (Perplexity Logic)
-            study_hours = (estimated_buses * 
-                          study_data['base_hours_per_bus'] * 
-                          study_data['calibration_factor'] * 
-                          tier_complexity)
-            
-            total_study_hours += study_hours
-            
-            # Calculate costs by level with custom allocations
-            senior_hours = study_hours * RATES['senior']['allocation']
-            mid_hours = study_hours * RATES['mid']['allocation']
-            junior_hours = study_hours * RATES['junior']['allocation']
-            
-            # Apply urgency multiplier if needed (Perplexity Logic)
-            rate_multiplier = urgency_multiplier if delivery_type == "Urgent" else 1.0
-            
-            senior_cost = senior_hours * RATES['senior']['hourly'] * rate_multiplier
-            mid_cost = mid_hours * RATES['mid']['hourly'] * rate_multiplier
-            junior_cost = junior_hours * RATES['junior']['hourly'] * rate_multiplier
-            
-            study_total_cost = senior_cost + mid_cost + junior_cost
-            total_study_cost += study_total_cost
-            
-            # Store study results
-            results['studies'][study_key] = {
-                'name': study_data['name'],
-                'emoji': study_data['emoji'],
-                'hours': study_hours,
-                'senior_hours': senior_hours,
-                'mid_hours': mid_hours,
-                'junior_hours': junior_hours,
-                'senior_cost': senior_cost,
-                'mid_cost': mid_cost,
-                'junior_cost': junior_cost,
-                'total_cost': study_total_cost,
-                'complexity': study_data['complexity']
-            }
-    
-    # Step 4: Additional costs (Perplexity Logic)
-    total_meeting_cost = client_meetings * meeting_cost
-    report_cost = 15000 * REPORT_MULTIPLIERS[report_format]
-    
-    # Step 5: Total project cost calculation (Perplexity Logic)
-    subtotal = total_study_cost + total_meeting_cost + report_cost
-    total_cost = subtotal * (1 + custom_margin/100)
-    
-    results['costs'] = {
-        'total_study_cost': total_study_cost,
-        'meeting_cost': total_meeting_cost,
-        'report_cost': report_cost,
-        'subtotal': subtotal,
-        'margin_amount': subtotal * (custom_margin/100),
-        'total_cost': total_cost,
-        'total_hours': total_study_hours
-    }
-    
-    return results
 
-# Calculate results
-results = calculate_project_cost()
+# Additional costs
+total_meeting_cost = client_meetings * meeting_cost
+REPORT_MULTIPLIERS = {"Basic PDF": 1.0, "Detailed Report with Appendices": 1.8, "Client-Branded Report": 2.2}
+report_cost = 15000 * REPORT_MULTIPLIERS[report_format]
+subtotal = total_study_cost + total_meeting_cost + report_cost
+total_cost = subtotal * (1 + custom_margin/100)
 
-# =============================================================================
-# MAIN DASHBOARD DISPLAY
-# =============================================================================
+# Results Section
+st.markdown("""
+<div class="section-header">
+    <h2>📊 Cost Estimation Results</h2>
+</div>
+""", unsafe_allow_html=True)
 
-# Display results
-st.header("📊 Cost Analysis Results")
-
-# Key metrics in columns
-col1, col2, col3, col4 = st.columns(4)
+# Main metrics
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.markdown(f"""
-    <div class="cost-card">
-        <h3 style="color: #1f4e79; margin: 0;">💰 Total Cost</h3>
-        <h2 style="color: #2e8b57; margin: 5px 0;">₹{results['costs']['total_cost']:,.0f}</h2>
-        <p style="margin: 0; color: #666;">+{custom_margin}% margin</p>
+    <div class="metric-card">
+        <h3>Project</h3>
+        <p class="value">{project_name}</p>
     </div>
     """, unsafe_allow_html=True)
 
 with col2:
     st.markdown(f"""
-    <div class="cost-card">
-        <h3 style="color: #1f4e79; margin: 0;">⏱️ Total Hours</h3>
-        <h2 style="color: #2e8b57; margin: 5px 0;">{results['costs']['total_hours']:.0f}</h2>
-        <p style="margin: 0; color: #666;">{len(results['studies'])} studies</p>
+    <div class="metric-card">
+        <h3>Total Load</h3>
+        <p class="value">{total_load:.1f} MW</p>
     </div>
     """, unsafe_allow_html=True)
 
 with col3:
     st.markdown(f"""
-    <div class="cost-card">
-        <h3 style="color: #1f4e79; margin: 0;">🔌 Buses</h3>
-        <h2 style="color: #2e8b57; margin: 5px 0;">{results['project_info']['estimated_buses']}</h2>
-        <p style="margin: 0; color: #666;">Bus Cal: {bus_calibration}x</p>
+    <div class="metric-card">
+        <h3>Tier Level</h3>
+        <p class="value">{tier_level.replace(' (Fault Tolerant)', '')}</p>
     </div>
     """, unsafe_allow_html=True)
 
 with col4:
     st.markdown(f"""
-    <div class="cost-card">
-        <h3 style="color: #1f4e79; margin: 0;">⚡ Load</h3>
-        <h2 style="color: #2e8b57; margin: 5px 0;">{results['project_info']['total_load']:.1f}</h2>
-        <p style="margin: 0; color: #666;">MW total</p>
+    <div class="metric-card">
+        <h3>Bus Count</h3>
+        <p class="value">{estimated_buses} buses</p>
     </div>
     """, unsafe_allow_html=True)
 
-# =============================================================================
-# SIMPLE PIE CHART FOR STUDY COSTS (WITHOUT PLOTLY)
-# =============================================================================
-if results['studies']:
-    st.header("📊 Study-wise Cost Distribution")
-    
-    # Create pie chart data
-    study_names = [study['name'] for study in results['studies'].values()]
-    study_costs = [study['total_cost'] for study in results['studies'].values()]
-    study_percentages = [cost/sum(study_costs)*100 for cost in study_costs]
-    
-    # Display pie chart using Streamlit's native chart
-    pie_df = pd.DataFrame({
-        'Study': study_names,
-        'Cost': study_costs,
-        'Percentage': study_percentages
-    })
-    
-    col_chart, col_data = st.columns([2, 1])
-    
-    with col_chart:
-        # Simple bar chart as pie chart alternative
-        st.bar_chart(pie_df.set_index('Study')['Cost'])
-        
-    with col_data:
-        st.subheader("💰 Cost Breakdown")
-        for i, (name, cost, pct) in enumerate(zip(study_names, study_costs, study_percentages)):
-            emoji = list(results['studies'].values())[i]['emoji']
-            st.markdown(f"""
-            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 5px 0;">
-                <strong>{emoji} {name}</strong><br>
-                ₹{cost:,.0f} ({pct:.1f}%)
-            </div>
-            """, unsafe_allow_html=True)
-
-# =============================================================================
-# CALIBRATION STATUS DISPLAY
-# =============================================================================
-st.header("🔧 Current Calibration Settings")
-
-cal_col1, cal_col2, cal_col3 = st.columns(3)
-
-with cal_col1:
+with col5:
     st.markdown(f"""
-    <div class="calibration-section">
-        <h4>🔌 Bus Count Calibration</h4>
-        <p><strong>Factor:</strong> {bus_calibration}x</p>
-        <p><strong>Tier:</strong> {tier_level} ({BUS_PER_MW[tier_level]} buses/MW base)</p>
-        <p><strong>Estimated Buses:</strong> {results['project_info']['estimated_buses']}</p>
+    <div class="metric-card">
+        <h3>Total Hours</h3>
+        <p class="value">{total_study_hours:.0f} hrs</p>
     </div>
     """, unsafe_allow_html=True)
 
-with cal_col2:
-    st.markdown(f"""
-    <div class="calibration-section">
-        <h4>📊 Study Factors</h4>
-        <p><strong>Load Flow:</strong> {load_flow_factor}x</p>
-        <p><strong>Short Circuit:</strong> {short_circuit_factor}x</p>
-        <p><strong>PDC:</strong> {pdc_factor}x</p>
-        <p><strong>Arc Flash:</strong> {arc_flash_factor}x</p>
+# Study-wise Cost Breakdown
+if study_results:
+    st.markdown("""
+    <div class="section-header">
+        <h2>📋 Study-wise Cost Breakdown</h2>
     </div>
     """, unsafe_allow_html=True)
-
-with cal_col3:
-    st.markdown(f"""
-    <div class="calibration-section">
-        <h4>👥 Resource Allocation</h4>
-        <p><strong>Senior:</strong> {senior_allocation*100:.0f}% @ ₹{senior_rate}/hr</p>
-        <p><strong>Mid:</strong> {mid_allocation*100:.0f}% @ ₹{mid_rate}/hr</p>
-        <p><strong>Junior:</strong> {junior_allocation*100:.0f}% @ ₹{junior_rate}/hr</p>
-        <p><strong>Meeting Cost:</strong> ₹{meeting_cost:,}/meeting</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Study breakdown with calibration info
-if results['studies']:
-    st.header("📋 Detailed Study Analysis")
     
-    for study_key, study in results['studies'].items():
-        calibration_factor = STUDIES_DATA[study_key]['calibration_factor']
-        base_hours = STUDIES_DATA[study_key]['base_hours_per_bus']
-        
+    for study_key, study in study_results.items():
         st.markdown(f"""
-        <div class="study-item">
+        <div class="study-card">
             <h4>{study['emoji']} {study['name']}</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div>
-                    <p><strong>Complexity:</strong> {study['complexity']}</p>
-                    <p><strong>Base Hours/Bus:</strong> {base_hours}</p>
-                    <p><strong>Calibration Factor:</strong> {calibration_factor}x</p>
-                    <p><strong>Tier Multiplier:</strong> {TIER_FACTORS[tier_level]}x</p>
-                    <p><strong>Total Hours:</strong> {study['hours']:.1f}</p>
+            <p style="color: #64748b; margin: 0 0 1rem 0;">{study['hours']:.1f} hours total</p>
+            <div class="study-details">
+                <div class="study-detail-item">
+                    <strong>Senior:</strong> {study['senior_hours']:.1f}h (₹{study['senior_cost']:,.0f})<br>
+                    <strong>Mid:</strong> {study['mid_hours']:.1f}h (₹{study['mid_cost']:,.0f})<br>
+                    <strong>Junior:</strong> {study['junior_hours']:.1f}h (₹{study['junior_cost']:,.0f})
                 </div>
-                <div>
-                    <p><strong>Senior:</strong> {study['senior_hours']:.1f}h × ₹{senior_rate} = ₹{study['senior_cost']:,.0f}</p>
-                    <p><strong>Mid:</strong> {study['mid_hours']:.1f}h × ₹{mid_rate} = ₹{study['mid_cost']:,.0f}</p>
-                    <p><strong>Junior:</strong> {study['junior_hours']:.1f}h × ₹{junior_rate} = ₹{study['junior_cost']:,.0f}</p>
-                    <p style="border-top: 2px solid #2e8b57; padding-top: 10px;"><strong>Total Cost: ₹{study['total_cost']:,.0f}</strong></p>
+                <div class="cost-highlight">
+                    <p class="amount">₹{study['total_cost']:,.0f}</p>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-# Additional costs breakdown
-st.subheader("💼 Additional Cost Components")
-
-additional_col1, additional_col2, additional_col3 = st.columns(3)
-
-with additional_col1:
+    
+    # Resource allocation summary
     st.markdown(f"""
-    <div class="study-item">
-        <h4>🤝 Client Meetings</h4>
-        <p><strong>{client_meetings} meetings × ₹{meeting_cost:,}</strong></p>
-        <h3 style="color: #2e8b57; margin: 0;">₹{results['costs']['meeting_cost']:,.0f}</h3>
+    <div class="results-container">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; text-align: center;">
+            <div>
+                <h4 style="color: #06b6d4; margin: 0 0 0.5rem 0;">Senior Engineer ({senior_allocation*100:.0f}%)</h4>
+                <p style="color: #14b8a6; font-size: 1.5rem; font-weight: 700; margin: 0;">{total_study_hours * senior_allocation:.0f} hours</p>
+                <p style="color: #64748b; margin: 0;">Rate: ₹{senior_rate}/hr</p>
+            </div>
+            <div>
+                <h4 style="color: #06b6d4; margin: 0 0 0.5rem 0;">Mid-level Engineer ({mid_allocation*100:.0f}%)</h4>
+                <p style="color: #14b8a6; font-size: 1.5rem; font-weight: 700; margin: 0;">{total_study_hours * mid_allocation:.0f} hours</p>
+                <p style="color: #64748b; margin: 0;">Rate: ₹{mid_rate}/hr</p>
+            </div>
+            <div>
+                <h4 style="color: #06b6d4; margin: 0 0 0.5rem 0;">Junior Engineer ({junior_allocation*100:.0f}%)</h4>
+                <p style="color: #14b8a6; font-size: 1.5rem; font-weight: 700; margin: 0;">{total_study_hours * junior_allocation:.0f} hours</p>
+                <p style="color: #64748b; margin: 0;">Rate: ₹{junior_rate}/hr</p>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-with additional_col2:
-    st.markdown(f"""
-    <div class="study-item">
-        <h4>📄 Report Preparation</h4>
-        <p><strong>{report_format}</strong></p>
-        <p>Base: ₹15,000 × {REPORT_MULTIPLIERS[report_format]}x</p>
-        <h3 style="color: #2e8b57; margin: 0;">₹{results['costs']['report_cost']:,.0f}</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-with additional_col3:
-    st.markdown(f"""
-    <div class="study-item">
-        <h4>📈 Profit Margin</h4>
-        <p><strong>{custom_margin}% on subtotal</strong></p>
-        <p>₹{results['costs']['subtotal']:,.0f} × {custom_margin}%</p>
-        <h3 style="color: #2e8b57; margin: 0;">₹{results['costs']['margin_amount']:,.0f}</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-else:
-    st.warning("⚠️ No studies selected. Please select at least one study type from the sidebar.")
-
-# Technical specifications
-with st.expander("🔧 Technical Specifications & Methodology"):
-    st.markdown("""
-    ### 📊 Calculation Methodology (Perplexity AI Labs Logic)
-    
-    **Bus Count Estimation:**
-    ```
-    Estimated_Buses = ⌈Total_Load × Tier_Factor × Bus_Calibration_Factor⌉
-    ```
-    
-    **Study Hours Calculation:**
-    ```
-    Study_Hours = Bus_Count × Base_Hours_per_Bus × Study_Calibration_Factor × Tier_Complexity_Factor
-    ```
-    
-    **Cost Calculation:**
-    ```
-    Study_Cost = (Senior_Hours × Senior_Rate + Mid_Hours × Mid_Rate + Junior_Hours × Junior_Rate) × Urgency_Factor
-    Total_Cost = (Study_Costs + Meeting_Costs + Report_Costs) × (1 + Margin%)
-    ```
-    
-    **Current Calibration Values:**
-    - Bus Calibration Factor: {bus_calibration}x
-    - Study Factors: LF:{load_flow_factor}x, SC:{short_circuit_factor}x, PDC:{pdc_factor}x, AF:{arc_flash_factor}x
-    - Resource Allocation: Sr:{senior_allocation*100:.0f}%, Mid:{mid_allocation*100:.0f}%, Jr:{junior_allocation*100:.0f}%
-    - Hourly Rates: Sr:₹{senior_rate}, Mid:₹{mid_rate}, Jr:₹{junior_rate}
-    - Urgency Multiplier: {urgency_multiplier}x
-    """.format(
-        bus_calibration=bus_calibration,
-        load_flow_factor=load_flow_factor,
-        short_circuit_factor=short_circuit_factor,
-        pdc_factor=pdc_factor,
-        arc_flash_factor=arc_flash_factor,
-        senior_allocation=senior_allocation,
-        mid_allocation=mid_allocation,
-        junior_allocation=junior_allocation,
-        senior_rate=senior_rate,
-        mid_rate=mid_rate,
-        junior_rate=junior_rate,
-        urgency_multiplier=urgency_multiplier
-    ))
+# Simple chart using Streamlit
+if study_results:
+    st.markdown("### 📊 Cost Distribution")
+    chart_data = pd.DataFrame({
+        'Study': [study['name'] for study in study_results.values()],
+        'Cost': [study['total_cost'] for study in study_results.values()]
+    })
+    st.bar_chart(chart_data.set_index('Study'))
 
 # Footer
-st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #666; padding: 20px;">
-    <p><b>⚡ Data Center Power System Studies Cost Estimator</b></p>
-    <p>🚀 Developed by <b>Abhishek Diwanji</b> | Power Systems Engineering Expert</p>
-    <p>📧 For professional consulting, custom tools, and technical support</p>
-    <p><i>Enhanced Version 2.0 | Full Calibration Controls</i></p>
+<div style="text-align: center; color: #64748b; padding: 2rem; margin-top: 3rem; border-top: 1px solid rgba(100, 116, 139, 0.2);">
+    <p style="font-size: 1.1rem; font-weight: 600; color: #14b8a6; margin: 0;">⚡ Data Center Power System Studies Cost Estimator</p>
+    <p style="margin: 0.5rem 0;">🚀 Developed by <strong>Abhishek Diwanji</strong> | Power Systems Engineering Expert</p>
+    <p style="margin: 0; font-size: 0.9rem;">Enhanced Version 2.0 | Professional UI & Advanced Calibration</p>
 </div>
 """, unsafe_allow_html=True)
