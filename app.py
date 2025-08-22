@@ -15,7 +15,7 @@ st.set_page_config(
 
 # Title and description
 st.title("⚡ Data Center Electrical Bus Count Estimator")
-st.markdown("**Professional tool for estimating electrical bus requirements in data center power distribution systems**")
+st.markdown("**Tool tool for estimating electrical bus requirements in data center power distribution systems**")
 
 # Sidebar for inputs
 st.sidebar.header("📊 Configuration Parameters")
@@ -519,5 +519,5 @@ VALIDATION:
 
 # Footer
 st.markdown("---")
-st.markdown("**References:** Uptime Institute Data Center Standards, IEEE 493 Reliability Standards, Industry Best Practices")
-st.markdown("*Developed for professional electrical engineering applications. Validate results against specific project requirements.*")
+st.markdown("**References:** Uptime Data Center Standards, IEEE  Reliability Standards, Industry Best Practices")
+st.markdown("*Developed By Abhishek, Validate results against specific project requirements.*")
